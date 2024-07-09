@@ -1,0 +1,12 @@
+{
+	"name": "log-generator",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js"
+	},
+	"dependencies": {
+		"faker": "^5.5.3"
+	}
+}
