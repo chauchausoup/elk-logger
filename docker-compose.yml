@@ -43,8 +43,8 @@ services:
     container_name: log-generator
     volumes:
       - ./log-generator/logs:/usr/src/app/logs
-    depends_on:
-      - logstash
+    # depends_on:
+    #   - logstash
     networks:
       - elk
 
