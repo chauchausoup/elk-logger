@@ -1,4 +1,4 @@
-const net = require('net');
+const axios = require('axios');
 const faker = require('faker');
 const fs = require('fs');
 const path = require('path');
@@ -8,9 +8,6 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
 
-const LOG_TIMER = 5000;
-
-let logFile;
 let logFileStream;
 
 function createNewLogFile() {
@@ -22,7 +19,7 @@ function createNewLogFile() {
         .getMinutes()
         .toString()
         .padStart(2, '0')}.log`;
-    logFile = path.join(logDir, logFileName);
+    const logFile = path.join(logDir, logFileName);
 
     if (logFileStream) {
         logFileStream.end();
@@ -32,7 +29,6 @@ function createNewLogFile() {
 }
 
 createNewLogFile();
-
 setInterval(createNewLogFile, 60 * 1000);
 
 function generateLog() {
@@ -75,31 +71,34 @@ function generateLog() {
     return JSON.stringify(logEntry);
 }
 
-setInterval(() => {
-    const logEntry = generateLog();
-    logFileStream.write(logEntry + '\n');
-    console.log('Written log entry:', logEntry);
-}, LOG_TIMER);
-
-logFileStream.on('error', function (err) {
-    console.error('Log file stream error:', err);
-});
-
-try {
-    const client = new net.Socket();
-    client.connect(5004, '0.0.0.0', function () {
-        console.log('Connected to Logstash');
+function writeLogToFile(logEntry) {
+    logFileStream.write(logEntry + '\n', err => {
+        if (err) {
+            console.error('Log file stream error:', err);
+        }
     });
-} catch (e) {
-    console.log('error in connection');
+    console.log('Written log entry:', logEntry);
 }
 
-setInterval(() => {
-    const logEntry = generateLog();
-    client.write(logEntry + '\n');
-    console.log('Sent log entry to Logstash:', logEntry);
-}, LOG_TIMER);
+async function sendLogToLogstash(logEntry) {
+    try {
+        await axios.post('http://logstash:5004', logEntry, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log('Sent log entry to Logstash:', logEntry);
+    } catch (err) {
+        console.error('Logstash connection error:', err);
+    }
+}
 
-client.on('error', function (err) {
-    console.error('Connection error:', err);
-});
+function main() {
+    setInterval(async () => {
+        const logEntry = generateLog();
+        writeLogToFile(logEntry);
+        await sendLogToLogstash(logEntry);
+    }, 5000);
+}
+
+main();

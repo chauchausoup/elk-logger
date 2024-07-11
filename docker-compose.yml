@@ -19,6 +19,7 @@ services:
     volumes:
       - ./logstash/config:/usr/share/logstash/config
       - ./logstash/pipeline:/usr/share/logstash/pipeline
+      # - logstash-logs:/usr/share/logstash/logs
     ports:
       - 5004:5004
     depends_on:
@@ -41,10 +42,8 @@ services:
   log-generator:
     build: ./log-generator
     container_name: log-generator
-    volumes:
-      - ./log-generator/logs:/usr/src/app/logs
-    # depends_on:
-    #   - logstash
+    depends_on:
+      - logstash
     networks:
       - elk
 
@@ -55,3 +54,5 @@ networks:
 volumes:
   esdata:
     driver: local
+  # logstash-logs:
+  #   driver: local
