@@ -1,7 +1,7 @@
-const axios = require('axios');
 const faker = require('faker');
 const fs = require('fs');
 const path = require('path');
+const kafka = require('kafka-node');
 
 const logDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logDir)) {
@@ -80,25 +80,29 @@ function writeLogToFile(logEntry) {
     console.log('Written log entry:', logEntry);
 }
 
-async function sendLogToLogstash(logEntry) {
-    try {
-        await axios.post('http://logstash:5004', logEntry, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+async function sendLogToKafka(logEntry) {
+    const client = new kafka.KafkaClient({kafkaHost: 'kafka:9092'});
+    const producer = new kafka.Producer(client);
+    const payloads = [{ topic: 'log-topic', messages: logEntry, partition: 0 }];
+
+    producer.on('ready', () => {
+        producer.send(payloads, (err, data) => {
+            if (err) console.error('Kafka connection error:', err);
+            else console.log('Sent log entry to Kafka:', logEntry);
         });
-        console.log('Sent log entry to Logstash:', logEntry);
-    } catch (err) {
-        console.error('Logstash connection error:', err);
-    }
+    });
+
+    producer.on('error', err => {
+        console.error('Kafka producer error:', err);
+    });
 }
 
 function main() {
     setInterval(async () => {
         const logEntry = generateLog();
         writeLogToFile(logEntry);
-        await sendLogToLogstash(logEntry);
-    }, 5000);
+        await sendLogToKafka(logEntry);
+    }, 2000);
 }
 
 main();
