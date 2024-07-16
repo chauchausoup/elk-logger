@@ -38,34 +38,7 @@ function generateLog() {
     const logEntry = {
         timestamp: new Date().toISOString(),
         level: logType,
-        message: faker.lorem.sentence(),
-        user: {
-            id: faker.datatype.uuid(),
-            name: faker.name.findName(),
-            email: faker.internet.email(),
-            ip: faker.internet.ip(),
-            location: {
-                latitude: faker.address.latitude(),
-                longitude: faker.address.longitude(),
-            },
-        },
-        request: {
-            method: faker.random.arrayElement(['GET', 'POST', 'PUT', 'DELETE']),
-            url: faker.internet.url(),
-            status: faker.random.arrayElement([200, 201, 400, 404, 500]),
-            responseTime: faker.datatype.number({min: 20, max: 3000}),
-            userAgent: faker.internet.userAgent(),
-            headers: {
-                host: faker.internet.domainName(),
-                connection: faker.random.arrayElement(['keep-alive', 'close']),
-                'content-type': faker.random.arrayElement(['application/json', 'text/html', 'application/xml']),
-            },
-        },
-        system: {
-            cpuUsage: faker.datatype.float({min: 0, max: 100}),
-            memoryUsage: faker.datatype.number({min: 100, max: 16000}),
-            diskUsage: faker.datatype.number({min: 100, max: 102400}),
-        },
+        event: faker.hacker.verb(),
     };
 
     return JSON.stringify(logEntry);
