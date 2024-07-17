@@ -31,12 +31,9 @@ createNewLogFile();
 setInterval(createNewLogFile, 60 * 1000);
 
 function generateLog() {
-    const logTypes = ['INFO', 'ERROR', 'WARN', 'DEBUG'];
-    const logType = logTypes[Math.floor(Math.random() * logTypes.length)];
 
     const logEntry = {
         timestamp: new Date().toISOString(),
-        level: logType,
         event: faker.hacker.verb(),
     };
 
@@ -74,7 +71,7 @@ function main() {
         const logEntry = generateLog();
         writeLogToFile(logEntry);
         await sendLogToKafka(logEntry);
-    }, 500);
+    }, 100);
 }
 
 main();

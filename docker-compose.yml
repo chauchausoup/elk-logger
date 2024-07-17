@@ -81,6 +81,14 @@ services:
     networks:
       - elk
 
+  log-generator-3:
+    build: ./log-generator-3
+    container_name: log-generator-3
+    depends_on:
+      - kafka
+    networks:
+      - elk
+  
 networks:
   elk:
     driver: bridge
