@@ -38,18 +38,19 @@ services:
       - elk
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.14.1
+    build: ./logstash
     container_name: logstash
     volumes:
       - ./logstash/config:/usr/share/logstash/config
       - ./logstash/pipeline:/usr/share/logstash/pipeline
-      # - logstash-logs:/usr/share/logstash/logs
+      # - logstash-logs:/usr/share/logstash/logs    
     ports:
       - 5004:5004
       - 5044:5044
     depends_on:
       - elasticsearch
       - kafka
+      - postgres
     networks:
       - elk
 
@@ -62,6 +63,20 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch
+    networks:
+      - elk
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: logs
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
     networks:
       - elk
 
