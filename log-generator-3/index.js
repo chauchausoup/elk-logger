@@ -71,7 +71,7 @@ function main() {
         const logEntry = generateLog();
         writeLogToFile(logEntry);
         await sendLogToKafka(logEntry);
-    }, 100);
+    }, 1000);
 }
 
 main();
